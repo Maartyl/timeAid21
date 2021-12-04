@@ -6,6 +6,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
@@ -14,29 +16,28 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import maa.ljt.AppTheme
-import maa.ljt.TopGathering
-import maa.ljt.TopState
-import maa.ljt.TopTray
+import maa.ljt.*
 
 
 fun main() = application {
   AppTheme {
+    //gathering
     val initSize = DpSize(370.dp, 370.dp)
     val initPos = WindowPosition((-450).dp, 888.dp)
-    val ws = rememberWindowState(size = initSize, position = initPos)
+    val gws = rememberWindowState(size = initSize, position = initPos)
 
-    val tops = remember { TopState(window = ws) }
+    //sleep notify
+    val snws = rememberWindowState(size = DpSize(1000.dp, 370.dp), position = WindowPosition((-1830).dp, 888.dp))
+
+    val tops = remember { TopState(gatheringWindow = gws) }
 
     TopTray(tops)
-
-    this.exitApplication()
 
     tops.gatheringInProgress.value?.let { gs ->
       //var gwVisible by remember { mutableStateOf(false) }
       Window(
-        onCloseRequest = ::exitApplication,
-        state = ws,
+        onCloseRequest = {},
+        state = gws,
         title = "Gathering",
         alwaysOnTop = true,
         undecorated = true,
@@ -68,10 +69,30 @@ fun main() = application {
       }
     }
 
-//    Window(onCloseRequest = {}) {
-//      Test()
-//    }
+    //for DBG
+    remember { tops.sleepNotifyInProgress.value = true }
 
+    val showSleepNotify by tops.sleepNotifyInProgress.collectAsState()
+    if (showSleepNotify) {
+      Window(
+        onCloseRequest = {},
+        state = snws,
+        title = "Sleep Notify",
+        alwaysOnTop = true,
+        undecorated = true,
+        focusable = false,
+        transparent = true,
+        //visible = gwVisible,
+      ) {
+        remember {
+          //remember{}, because needs to run AS SOON as possible - before window shown
+          window.isAutoRequestFocus = false
+          window.focusableWindowState = false //aha! this works! - it allows hides it in window Mgr, but fine!
+        }
+
+        TopSleepNotify(tops, snws)
+      }
+    }
 
   }
 }

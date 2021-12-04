@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.mouseClickable
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -34,7 +33,7 @@ fun TopGathering(gs: TopGatheringState) {
     MaterialTheme.colors.surface
   }
 
-  Modifier.mouseClickable { }
+  //Modifier.mouseClickable { }
 
   Surface(
     modifier = mod.fillMaxSize(),
@@ -75,7 +74,7 @@ fun TopGathering(gs: TopGatheringState) {
 fun GBody(gs: TopGatheringState) {
   Column {
 
-    val w = gs.top.window
+    val w = gs.top.gatheringWindow
     Text("${w.size.height},${w.size.width} @ ${w.position.x},${w.position.y}", fontSize = 18.sp,
       modifier = Modifier.clickable {
 

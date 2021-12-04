@@ -3,14 +3,17 @@ package maa.ljt
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 
 //scope that lives for FULL duration of Process
 class TopState(
   //state reused each time window is open
   // window for Gathering
-  val window: WindowState,
+  val gatheringWindow: WindowState,
 
   val gatheringInProgress: MutableState<TopGatheringState?> = mutableStateOf(null),
+  val sleepNotifyInProgress: MutableStateFlow<Boolean> = MutableStateFlow(false),
 ) {
   fun showGather() {
     val g = gatheringInProgress.value
@@ -19,6 +22,13 @@ class TopState(
     } else {
       g.countsFor.value++
     }
+  }
+
+  // waits until window CLOSED - then lets ticker continue
+  // - usually: PC should have SLEPT by then
+  suspend fun showSleepNotify() {
+    sleepNotifyInProgress.value = true
+    sleepNotifyInProgress.first { !it } //wait untill off
   }
 }
 

@@ -4,10 +4,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Tray
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
@@ -16,28 +20,38 @@ fun ApplicationScope.TopTray(top: TopState) {
 
   val icon = rememberVectorPainter(Icons.Default.Info)
 
+  val cScope = rememberCoroutineScope()
 
-  Tray(icon, tooltip = "Hint Test", onAction = {
-    //== DOUBLECLICK for some reason
-    println("test tray on action")
-  }) {
+  //onAction = {
+  //    //== DOUBLECLICK for some reason
+  //    println("test tray on action")
+  //  }
+  Tray(icon, tooltip = "Hint Test") {
 
-    this.Menu("test menu") {
-      this.Item("sub item") {
-        println("sub item clicked")
-      }
-    }
-    this.Item("test item") {
-      println("test item clicked")
-    }
+    this.Menu("test") {}
 
     this.Item("Show") {
       top.showGather()
     }
+
+    this.Item("Sleep") {
+      cScope.launch { top.showSleepNotify() }
+    }
+
+    this.Item("Quit") {
+      exitApplication()
+    }
   }
 
   LaunchedEffect(top) {
-    tickerShowGather(top)
+    withContext(Dispatchers.Default) {
+      tickerShowGather(top)
+    }
+  }
+  LaunchedEffect(top) {
+    withContext(Dispatchers.Default) {
+      tickerSleepTime(top)
+    }
   }
 }
 
@@ -68,5 +82,21 @@ suspend fun tickerShowGather(top: TopState) {
     delay(msLeft) //ms left until next period
 
     top.showGather()
+  }
+}
+
+
+suspend fun tickerSleepTime(top: TopState) {
+  while (true) {
+    //always needs to check again after long suspend - computer might have slept meanwhile etc.
+    val tNow = ZonedDateTime.now()
+    val boundsNow = SleepConf.boundsAround(tNow)
+
+    if (boundsNow.hasWithinBounds(tNow)) {
+      top.showSleepNotify()
+    } else {
+      val waitFor = boundsNow.start.toInstant().toEpochMilli() - tNow.toInstant().toEpochMilli()
+      delay(waitFor)
+    }
   }
 }
