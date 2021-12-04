@@ -156,17 +156,18 @@ suspend fun doSleepPC(top: TopState) {
   //TODO: write before - will sleep
   // - after: did sleep
 
-  println("A")
-
   withContext(Dispatchers.IO) {
 //    System.getenv().forEach { (t, u) ->
 //      println("ENV: $t   -->   $u")
 //    }
+
+    //to TEST
     //val cmd = Path.of(System.getenv("USERPROFILE"), "dev\\tools\\delay1000.bat")
+
+    //this invokes bat -> PowerShell -> [System.Windows.Forms.Application]::SetSuspendState
     val cmd = Path.of(System.getenv("USERPROFILE"), "dev\\tools\\sleep.bat")
     Runtime.getRuntime().exec(cmd.pathString).waitFor()
   }
-  println("B")
 
   //TODO: notify here to hide
 }
