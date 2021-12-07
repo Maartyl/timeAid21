@@ -95,6 +95,7 @@ suspend fun tickerSleepTime(top: TopState) {
     if (boundsNow.hasWithinBounds(tNow)) {
       top.showSleepNotify()
     } else {
+      //ChronoUnit.MILLIS.between(boundsNow.start, tNow) // wrong: I want negative millies, if already happened ... ?
       val waitFor = boundsNow.start.toInstant().toEpochMilli() - tNow.toInstant().toEpochMilli()
       delay(waitFor)
     }

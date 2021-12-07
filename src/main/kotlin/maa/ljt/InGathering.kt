@@ -14,6 +14,46 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Window
+
+@Composable
+fun TopGatheringWindow(top: TopState) {
+  top.gatheringInProgress.value?.let { gs ->
+    //var gwVisible by remember { mutableStateOf(false) }
+    Window(
+      onCloseRequest = {},
+      state = top.gatheringWindow,
+      title = "Gathering",
+      alwaysOnTop = true,
+      undecorated = true,
+      focusable = false,
+      //visible = gwVisible,
+    ) {
+      remember {
+        //remember{}, because needs to run AS SOON as possible - before window shown
+        window.isAutoRequestFocus = false
+        window.focusableWindowState = false //aha! this works! - it allows hides it in window Mgr, but fine!
+
+        //this seems to break interactivity ... ?
+        //window.background = java.awt.Color(0,0,0,0)
+
+        //window.isUndecorated = true
+        //window.isVisible = false
+        //gwVisible = true
+
+        //window.toBack() //maybe this was forcing it the the last viirtual desktop?
+        // YES!!! It was just this! - AND it is not needed to not be focused - NICE
+        //FFS now it keeps opening in the wrong virtual desktop ... WHY ...
+        // why does nothing just work sensibly????
+
+        //OMG! It fixed itself! and now it is on ALL desktops!
+        // - amazing!
+      }
+
+      TopGathering(gs)
+    }
+  }
+}
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
