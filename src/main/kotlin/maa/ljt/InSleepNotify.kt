@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.DpSize
@@ -118,6 +117,12 @@ fun TopSleepNotify(top: TopState, ws: WindowState) {
   val mod = Modifier
   val cScope = rememberCoroutineScope { Dispatchers.Default }
 
+  //prevent actions right after appearing, in case
+  val actionsEnabled = produceState(false) {
+    delay(Duration.ofSeconds(10).toMillis())
+    value = true
+  }
+
   //tmp - offset
   //val clrFS = remember { mutableStateOf(0.5f) }
   val clrTmp = remember { mutableStateOf(0.3f) }
@@ -155,10 +160,10 @@ fun TopSleepNotify(top: TopState, ws: WindowState) {
 //  val bg2 = lerp(lerpC, lerpR, clrF)
 
   //interestingly, I visually prefer the weird interpolation I made...
-  val bg = red.compositeOver(cyan.compositeOver(MaterialTheme.colors.surface))//.copy(alpha = alfF)
+  val bg = red.compositeOver(cyan.compositeOver(MaterialTheme.colors.surface)).copy(alpha = alfF)
 
   Surface(
-    modifier = mod.fillMaxSize().alpha(alfF),
+    modifier = mod.fillMaxSize(), //.alpha(alfF)
     color = bg,
     contentColor = contentColorFor(MaterialTheme.colors.surface),
     //cannot make the whole window rounded - transparent bg does not work
@@ -189,8 +194,6 @@ fun TopSleepNotify(top: TopState, ws: WindowState) {
           Spacer(mod.size(10.dp))
           //o.kiru
           Text("起 " + wakeTime.format(xxxTimeFmt), mod, fontSize = 80.sp)
-
-          //残 noko.ri - remaining
         }
 
         Column(mod.padding(10.dp)) {
@@ -209,8 +212,7 @@ fun TopSleepNotify(top: TopState, ws: WindowState) {
 
           Button(onClick = {
             cScope.launch { doSleepPC(top) }
-
-          }, mod.padding(10.dp)) {
+          }, mod.padding(10.dp), enabled = actionsEnabled.value) {
             Text("Spát")
           }
         }
@@ -267,5 +269,5 @@ suspend fun doSleepPC(top: TopState) {
     p.waitFor()
   }
 
-  //TODO: notify here to hide
+  top.sleepNotifyInProgress.value = false
 }
